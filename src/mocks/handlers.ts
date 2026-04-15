@@ -8,6 +8,11 @@ import {
   getNotebooksList,
   patchNotebook
 } from './catalogue-service/notebook-files';
+import {
+  deleteCondaEnvironment,
+  getCondaEnvironmentsList,
+  patchCondaEnvironment
+} from './catalogue-service/conda-environments';
 
 function getExternalServiceHandler(
   method: string,
@@ -101,6 +106,33 @@ export const externalServiceHandlers = [
       'http://localhost:8000',
       '/workflow-cells/*/',
       patchCell
+    )
+  ),
+  http.post(
+    '/naavre-communicator/external-service',
+    getExternalServiceHandler(
+      'GET',
+      'http://localhost:8000',
+      '/conda-environments/',
+      getCondaEnvironmentsList
+    )
+  ),
+  http.post(
+    '/naavre-communicator/external-service',
+    getExternalServiceHandler(
+      'PATCH',
+      'http://localhost:8000',
+      '/conda-environments/*/',
+      patchCondaEnvironment
+    )
+  ),
+  http.post(
+    '/naavre-communicator/external-service',
+    getExternalServiceHandler(
+      'DELETE',
+      'http://localhost:8000',
+      '/conda-environments/*/',
+      deleteCondaEnvironment
     )
   )
 ];

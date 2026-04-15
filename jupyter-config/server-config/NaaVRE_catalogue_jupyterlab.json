@@ -1,0 +1,7 @@
+{
+  "ServerApp": {
+    "jpserver_extensions": {
+      "NaaVRE_catalogue_jupyterlab": true
+    }
+  }
+}

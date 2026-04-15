@@ -3,8 +3,10 @@ import {
   IWorkflowCell,
   IWorkflowFile
 } from '../../types/NaaVRECatalogue/assets';
+import { ICondaEnvironment } from '../../types/NaaVRECatalogue/conda-environments';
 
 export type Asset = INotebookFile | IWorkflowCell | IWorkflowFile;
+export type CondaAsset = ICondaEnvironment;
 
 export type AssetKind = {
   name: string;
@@ -31,5 +33,11 @@ export const assetKinds: AssetKind[] = [
     namePlural: 'workflow file',
     slug: 'workflow-files',
     cataloguePath: 'workflow-files'
+  },
+  {
+    name: 'conda environment',
+    namePlural: 'conda environment',
+    slug: 'conda-environments',
+    cataloguePath: 'conda-environments'
   }
 ];

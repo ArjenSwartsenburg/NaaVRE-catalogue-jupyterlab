@@ -8,9 +8,29 @@ except ImportError:
     warnings.warn("Importing 'NaaVRE_catalogue_jupyterlab' outside a proper installation.")
     __version__ = "dev"
 
+from .handlers import setup_handlers
+
 
 def _jupyter_labextension_paths():
     return [{
         "src": "labextension",
         "dest": "@naavre/catalogue-jupyterlab"
     }]
+
+
+def _jupyter_server_extension_points():
+    return [{
+        "module": "NaaVRE_catalogue_jupyterlab"
+    }]
+
+
+def _load_jupyter_server_extension(server_app):
+    """Registers the API handlers for conda environment operations.
+
+    Parameters
+    ----------
+    server_app: jupyterlab.labapp.LabApp
+        JupyterLab application instance
+    """
+    setup_handlers(server_app.web_app)
+    server_app.log.info("Registered NaaVRE_catalogue_jupyterlab server extension")
