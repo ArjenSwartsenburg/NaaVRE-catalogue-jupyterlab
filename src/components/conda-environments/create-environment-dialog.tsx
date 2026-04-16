@@ -83,15 +83,12 @@ export function CreateEnvironmentDialog({
         dependencyKey = key;
       }
 
-      const body: Partial<ICondaEnvironment> = {
+      const body: Record<string, unknown> = {
         title: name.trim(),
-        description: description.trim() || undefined,
         environment_name: name.trim(),
-        python_version: '',
-        package_count: 0,
-        created_date: null,
-        environment_file: null,
-        dependency_list: dependencyKey
+        virtual_lab: settings.virtualLab,
+        ...(description.trim() ? { description: description.trim() } : {}),
+        ...(dependencyKey ? { dependency_list_key: dependencyKey } : {})
       };
 
       const resp = await NaaVREExternalService(

@@ -97,14 +97,11 @@ export function ImportEnvironmentDialog({
       );
       await uploadFile(url, selectedFile);
 
-      const body: Partial<ICondaEnvironment> = {
+      const body: Record<string, unknown> = {
         title: title.trim(),
         environment_name: environmentName.trim() || title.trim(),
-        python_version: '',
-        package_count: 0,
-        created_date: null,
-        environment_file: key,
-        dependency_list: null
+        virtual_lab: settings.virtualLab,
+        environment_file_key: key
       };
 
       const resp = await NaaVREExternalService(
