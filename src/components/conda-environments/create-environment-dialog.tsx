@@ -45,15 +45,17 @@ async function uploadText(url: string, text: string): Promise<void> {
 export function CreateEnvironmentDialog({
   open,
   onClose,
-  onCreated
+  onCreated,
+  initialName = ''
 }: {
   open: boolean;
   onClose: () => void;
   onCreated: (env: ICondaEnvironment) => void;
+  initialName?: string;
 }) {
   const settings = useContext(SettingsContext);
 
-  const [name, setName] = useState('');
+  const [name, setName] = useState(initialName);
   const [description, setDescription] = useState('');
   const [dependencies, setDependencies] = useState('');
   const [loading, setLoading] = useState(false);

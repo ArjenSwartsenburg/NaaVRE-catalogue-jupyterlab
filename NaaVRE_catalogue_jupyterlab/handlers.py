@@ -21,11 +21,12 @@ class CondaPackHandler(APIHandler):
             return
 
         environment_name = body.get("environment_name")
+        environment_prefix = body.get("environment_prefix")
         upload_url = body.get("upload_url")
 
-        if not environment_name:
+        if not environment_name and not environment_prefix:
             self.set_status(400)
-            self.finish(json.dumps({"message": "environment_name is required"}))
+            self.finish(json.dumps({"message": "environment_name or environment_prefix is required"}))
             return
         if not upload_url:
             self.set_status(400)
@@ -36,8 +37,12 @@ class CondaPackHandler(APIHandler):
             tmp_path = tmp.name
 
         try:
+            if environment_prefix:
+                pack_args = ["conda-pack", "--prefix", environment_prefix, "-o", tmp_path, "--force"]
+            else:
+                pack_args = ["conda-pack", "-n", environment_name, "-o", tmp_path, "--force"]
             result = subprocess.run(
-                ["conda-pack", "-n", environment_name, "-o", tmp_path, "--overwrite"],
+                pack_args,
                 capture_output=True,
                 text=True,
             )
@@ -151,6 +156,68 @@ class CondaInstallHandler(APIHandler):
         }))
 
 
+class CondaExplicitListHandler(APIHandler):
+    """Return the explicit package list for a conda environment."""
+
+    @tornado.web.authenticated
+    def get(self):
+        env_name = self.get_argument('name', None)
+        if not env_name:
+            self.set_status(400)
+            self.finish(json.dumps({'message': 'name query parameter is required'}))
+            return
+        try:
+            result = subprocess.run(
+                ['conda', 'list', '-n', env_name, '--explicit'],
+                capture_output=True,
+                text=True,
+            )
+            if result.returncode != 0:
+                self.set_status(500)
+                self.finish(json.dumps({
+                    'message': f'conda list failed: {result.stderr}'
+                }))
+                return
+            self.finish(json.dumps({'content': result.stdout}))
+        except Exception as e:
+            self.set_status(500)
+            self.finish(json.dumps({'message': str(e)}))
+
+
+class CondaEnvListHandler(APIHandler):
+    """List conda environments available on the machine."""
+
+    @tornado.web.authenticated
+    def get(self):
+        try:
+            result = subprocess.run(
+                ["conda", "env", "list", "--json"],
+                capture_output=True,
+                text=True,
+            )
+            if result.returncode != 0:
+                self.set_status(500)
+                self.finish(json.dumps({"message": f"conda env list failed: {result.stderr}"}))
+                return
+
+            data = json.loads(result.stdout)
+            envs = []
+            for p in data.get("envs", []):
+                # Paths under .../envs/<name> use the basename as name;
+                # the root conda installation is the "base" environment.
+                parts = p.replace("\\", "/").split("/")
+                if len(parts) >= 2 and parts[-2] == "envs":
+                    name = parts[-1]
+                else:
+                    name = "base"
+                envs.append({"name": name, "path": p})
+            self.log.info(f"Local conda envs: {[e['name'] for e in envs]}")
+            self.finish(json.dumps({"envs": envs}))
+        except Exception as e:
+            self.set_status(500)
+            self.finish(json.dumps({"message": str(e)}))
+
+
 def setup_handlers(web_app):
     host_pattern = ".*$"
     base_url = web_app.settings["base_url"]
@@ -163,6 +230,14 @@ def setup_handlers(web_app):
         (
             url_path_join(base_url, "naavre-catalogue", "conda", "install"),
             CondaInstallHandler,
+        ),
+        (
+            url_path_join(base_url, "naavre-catalogue", "conda", "explicit-list"),
+            CondaExplicitListHandler,
+        ),
+        (
+            url_path_join(base_url, "naavre-catalogue", "conda", "envs"),
+            CondaEnvListHandler,
         ),
     ]
     web_app.add_handlers(host_pattern, handlers)

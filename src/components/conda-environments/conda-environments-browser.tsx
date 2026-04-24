@@ -6,6 +6,7 @@ import Typography from '@mui/material/Typography';
 import { ICondaEnvironment } from '../../types/NaaVRECatalogue/conda-environments';
 import { CondaEnvironmentsList } from './conda-environments-list';
 import { CondaEnvironmentDetail } from './conda-environment-detail';
+import { LocalEnvDetail } from './local-env-detail';
 import { CreateEnvironmentDialog } from './create-environment-dialog';
 import { ImportEnvironmentDialog } from './import-environment-dialog';
 import { SharingScopesContext } from '../../contexts/SharingScopesContext';
@@ -14,6 +15,7 @@ import { useCatalogueList } from '../../hooks/use-catalogue-list';
 import { ISharingScope } from '../../types/NaaVRECatalogue/assets';
 import { SettingsContext } from '../../settings';
 import { useUserInfo } from '../../hooks/use-user-info';
+import { ILocalCondaEnv } from '../../services/conda-server';
 
 export function CondaEnvironmentsBrowser() {
   const settings = useContext(SettingsContext);
@@ -29,6 +31,8 @@ export function CondaEnvironmentsBrowser() {
   const [selectedEnv, setSelectedEnv] = useState<ICondaEnvironment | null>(
     null
   );
+  const [selectedLocalEnv, setSelectedLocalEnv] =
+    useState<ILocalCondaEnv | null>(null);
   const [createOpen, setCreateOpen] = useState(false);
   const [importOpen, setImportOpen] = useState(false);
   // Bump this to force list refresh
@@ -70,8 +74,16 @@ export function CondaEnvironmentsBrowser() {
                 key={listKey}
                 selectedUrl={selectedEnv?.url ?? null}
                 onSelect={env => {
+                  setSelectedLocalEnv(null);
                   setSelectedEnv(prev =>
                     prev?.url === env.url ? null : env
+                  );
+                }}
+                selectedLocalName={selectedLocalEnv?.name ?? null}
+                onSelectLocal={env => {
+                  setSelectedEnv(null);
+                  setSelectedLocalEnv(prev =>
+                    prev?.name === env.name ? null : env
                   );
                 }}
               />
@@ -83,6 +95,19 @@ export function CondaEnvironmentsBrowser() {
                   environment={selectedEnv}
                   onClose={() => setSelectedEnv(null)}
                   onUpdated={updated => setSelectedEnv(updated)}
+                />
+              </Stack>
+            )}
+            {selectedLocalEnv && (
+              <Stack sx={{ width: 460, flexShrink: 0 }}>
+                <LocalEnvDetail
+                  env={selectedLocalEnv}
+                  onClose={() => setSelectedLocalEnv(null)}
+                  onAddedToCatalogue={created => {
+                    setSelectedLocalEnv(null);
+                    setSelectedEnv(created);
+                    refreshList();
+                  }}
                 />
               </Stack>
             )}

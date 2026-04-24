@@ -25,11 +25,13 @@ function ArtifactStatusChip({
 export function CondaEnvironmentListItem({
   environment,
   selected,
-  onSelect
+  onSelect,
+  isLocal
 }: {
   environment: ICondaEnvironment;
   selected: boolean;
   onSelect: (env: ICondaEnvironment) => void;
+  isLocal?: boolean;
 }) {
   return (
     <TableRow
@@ -42,6 +44,15 @@ export function CondaEnvironmentListItem({
         <Typography variant="body2" fontWeight={selected ? 600 : 400}>
           {environment.title}
         </Typography>
+        {isLocal && (
+          <Chip
+            label="installed"
+            color="primary"
+            size="small"
+            variant="outlined"
+            sx={{ ml: 0.5, verticalAlign: 'middle' }}
+          />
+        )}
       </TableCell>
       <TableCell>
         <ArtifactStatusChip environmentFile={environment.environment_file} />
@@ -56,6 +67,43 @@ export function CondaEnvironmentListItem({
             : '—'}
         </Typography>
       </TableCell>
+    </TableRow>
+  );
+}
+
+export function LocalOnlyCondaEnvironmentListItem({
+  environmentName,
+  selected,
+  onSelect
+}: {
+  environmentName: string;
+  selected: boolean;
+  onSelect: (name: string) => void;
+}) {
+  return (
+    <TableRow
+      hover
+      selected={selected}
+      onClick={() => onSelect(environmentName)}
+      sx={{ cursor: 'pointer' }}
+    >
+      <TableCell>
+        <Typography variant="body2" fontWeight={selected ? 600 : 400}>
+          {environmentName}
+        </Typography>
+        <Chip
+          label="local only"
+          color="warning"
+          size="small"
+          variant="outlined"
+          sx={{ ml: 0.5, verticalAlign: 'middle' }}
+        />
+      </TableCell>
+      <TableCell>
+        <Chip label="not in catalogue" size="small" variant="outlined" />
+      </TableCell>
+      <TableCell>{'—'}</TableCell>
+      <TableCell>{'—'}</TableCell>
     </TableRow>
   );
 }

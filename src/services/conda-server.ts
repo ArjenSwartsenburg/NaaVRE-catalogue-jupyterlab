@@ -39,6 +39,7 @@ export async function requestCondaAPI<T>(
 export interface ICondaPackRequest {
   environment_name: string;
   upload_url: string;
+  environment_prefix?: string;
 }
 
 export interface ICondaPackResponse {
@@ -73,4 +74,32 @@ export function installCondaEnvironment(
     body: JSON.stringify(req),
     headers: { 'Content-Type': 'application/json' }
   });
+}
+
+export interface ILocalCondaEnv {
+  name: string;
+  path: string;
+}
+
+export interface ILocalCondaEnvsResponse {
+  envs: ILocalCondaEnv[];
+}
+
+export function getLocalCondaEnvs(): Promise<ILocalCondaEnvsResponse> {
+  return requestCondaAPI<ILocalCondaEnvsResponse>('conda/envs', {
+    method: 'GET'
+  });
+}
+
+export interface ICondaExplicitListResponse {
+  content: string;
+}
+
+export function getCondaExplicitList(
+  name: string
+): Promise<ICondaExplicitListResponse> {
+  return requestCondaAPI<ICondaExplicitListResponse>(
+    `conda/explicit-list?name=${encodeURIComponent(name)}`,
+    { method: 'GET' }
+  );
 }

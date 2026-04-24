@@ -1,4 +1,4 @@
-import React, { useContext } from 'react';
+import React, { useContext, useEffect, useState } from 'react';
 import Alert from '@mui/material/Alert';
 import CircularProgress from '@mui/material/CircularProgress';
 import IconButton from '@mui/material/IconButton';
@@ -11,21 +11,42 @@ import TableRow from '@mui/material/TableRow';
 import Tooltip from '@mui/material/Tooltip';
 import RefreshIcon from '@mui/icons-material/Refresh';
 
-import { CondaEnvironmentListItem } from './conda-environment-list-item';
+import { CondaEnvironmentListItem, LocalOnlyCondaEnvironmentListItem } from './conda-environment-list-item';
 import { ICondaEnvironment } from '../../types/NaaVRECatalogue/conda-environments';
 import { ListFilters } from '../assets-browser/list-filters';
 import { PageNav } from '../assets-browser/page-nav';
 import { SettingsContext } from '../../settings';
 import { useCatalogueList } from '../../hooks/use-catalogue-list';
+import { getLocalCondaEnvs, ILocalCondaEnv } from '../../services/conda-server';
 
 export function CondaEnvironmentsList({
   selectedUrl,
-  onSelect
+  onSelect,
+  selectedLocalName,
+  onSelectLocal
 }: {
   selectedUrl: string | null;
   onSelect: (env: ICondaEnvironment) => void;
+  selectedLocalName: string | null;
+  onSelectLocal: (env: ILocalCondaEnv) => void;
 }) {
   const settings = useContext(SettingsContext);
+
+  const [localEnvs, setLocalEnvs] = useState<ILocalCondaEnv[]>([]);
+
+  useEffect(() => {
+    getLocalCondaEnvs()
+      .then(res => {
+        console.debug('[CondaEnvironmentsList] local envs:', res.envs);
+        setLocalEnvs(res.envs);
+      })
+      .catch(err => {
+        console.warn('[CondaEnvironmentsList] failed to get local envs:', err);
+        setLocalEnvs([]);
+      });
+  }, []);
+
+  const localEnvNames = new Set(localEnvs.map(e => e.name));
 
   const {
     setUrl,
@@ -40,6 +61,15 @@ export function CondaEnvironmentsList({
     initialSearchParams: '?ordering=-created',
     startPaused: true
   });
+
+  const catalogueEnvNames = new Set(
+    (response?.results ?? []).map(e => e.environment_name)
+  );
+  const localOnlyEnvs = localEnvs.filter(
+    e => !catalogueEnvNames.has(e.name)
+  );
+  const hasAnyEnvs =
+    (response?.results?.length ?? 0) > 0 || localOnlyEnvs.length > 0;
 
   return (
     <Stack spacing={2}>
@@ -68,7 +98,7 @@ export function CondaEnvironmentsList({
 
       {!loading && !errorMessage && response && (
         <>
-          {response.results.length === 0 ? (
+          {!hasAnyEnvs ? (
             <Alert severity="info">No conda environments to display.</Alert>
           ) : (
             <Table size="small">
@@ -87,6 +117,15 @@ export function CondaEnvironmentsList({
                     environment={env}
                     selected={env.url === selectedUrl}
                     onSelect={onSelect}
+                    isLocal={localEnvNames.has(env.environment_name)}
+                  />
+                ))}
+                {localOnlyEnvs.map(env => (
+                  <LocalOnlyCondaEnvironmentListItem
+                    key={`local-${env.name}`}
+                    environmentName={env.name}
+                    selected={env.name === selectedLocalName}
+                    onSelect={() => onSelectLocal(env)}
                   />
                 ))}
               </TableBody>

@@ -22,7 +22,7 @@ import { ShareDialog } from '../assets-browser/share-dialog';
 import { DeleteDialog } from '../assets-browser/delete-dialog';
 import { SettingsContext } from '../../settings';
 import { UserInfoContext } from '../../contexts/UserInfoContext';
-import { packCondaEnvironment } from '../../services/conda-server';
+import { packCondaEnvironment, getLocalCondaEnvs } from '../../services/conda-server';
 import { Asset, assetKinds } from '../assets-browser/asset-kinds';
 import DeleteIcon from '@mui/icons-material/Delete';
 
@@ -88,7 +88,7 @@ function ActionButton({
     </Button>
   );
   if (tooltip) {
-    return <Tooltip title={tooltip}>{btn}</Tooltip>;
+    return <Tooltip title={tooltip}><span>{btn}</span></Tooltip>;
   }
   return btn;
 }
@@ -114,7 +114,9 @@ export function CondaEnvironmentDetail({
   const [packError, setPackError] = useState<string | null>(null);
   const [packSuccess, setPackSuccess] = useState<string | null>(null);
 
-  const isOwner = userInfo.username === environment.owner;
+  const effectiveUsername = userInfo.username ?? userInfo.preferred_username;
+  const isOwner =
+    effectiveUsername != null && effectiveUsername === environment.owner;
 
   const handleGenerateArtifact = useCallback(async () => {
     if (!settings.catalogueServiceUrl) {
@@ -125,21 +127,28 @@ export function CondaEnvironmentDetail({
     setPackError(null);
     setPackSuccess(null);
     try {
-      const filename = `${environment.environment_name || environment.title}.tar.gz`;
+      const envName = environment.environment_name || environment.title;
+      const filename = `${envName}.tar.gz`;
       const { key, url } = await presignConda(
         settings.catalogueServiceUrl,
         filename,
         'application/gzip'
       );
 
+      // Resolve the local path so conda-pack can handle the base environment
+      // (which requires --prefix instead of -n).
+      const { envs } = await getLocalCondaEnvs();
+      const localEnv = envs.find(e => e.name === envName);
+
       const { file_size } = await packCondaEnvironment({
-        environment_name: environment.environment_name || environment.title,
-        upload_url: url
+        environment_name: envName,
+        upload_url: url,
+        ...(localEnv ? { environment_prefix: localEnv.path } : {})
       });
 
       const updated = await patchCondaEnv(environment.url, {
-        environment_file: key
-      });
+        environment_file_key: key
+      } as Partial<ICondaEnvironment>);
 
       onUpdated(updated);
       setPackSuccess(
