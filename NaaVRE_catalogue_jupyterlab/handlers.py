@@ -96,6 +96,7 @@ class CondaInstallHandler(APIHandler):
 
         download_url = body.get("download_url")
         environment_name = body.get("environment_name")
+        install_method = body.get("install_method", "pack")  # "pack" | "explicit"
 
         if not download_url:
             self.set_status(400)
@@ -105,42 +106,104 @@ class CondaInstallHandler(APIHandler):
             self.set_status(400)
             self.finish(json.dumps({"message": "environment_name is required"}))
             return
+        if install_method not in ("pack", "explicit", "yaml"):
+            self.set_status(400)
+            self.finish(json.dumps({"message": "install_method must be 'pack', 'explicit', or 'yaml'"}))
+            return
 
-        # Derive conda environments directory from CONDA_PREFIX or default
-        conda_prefix = os.environ.get("CONDA_PREFIX", "")
-        if conda_prefix:
-            envs_dir = os.path.join(
-                os.path.dirname(os.path.dirname(conda_prefix)), "envs"
-            )
+        # Use a neutral suffix; actual format is detected from file content below
+        if install_method == "pack":
+            suffix = ".tar.gz"
         else:
-            envs_dir = os.path.expanduser("~/conda/envs")
+            suffix = ".txt"
 
-        install_path = os.path.join(envs_dir, environment_name)
-
-        with tempfile.NamedTemporaryFile(suffix=".tar.gz", delete=False) as tmp:
+        with tempfile.NamedTemporaryFile(suffix=suffix, delete=False) as tmp:
             tmp_path = tmp.name
 
         try:
             urllib.request.urlretrieve(download_url, tmp_path)
 
-            os.makedirs(install_path, exist_ok=True)
+            if install_method in ("explicit", "yaml"):
+                # Detect format from content: conda explicit lists contain an
+                # "@EXPLICIT" marker; anything else is treated as a YAML env file.
+                with open(tmp_path, "r", errors="replace") as f:
+                    header = f.read(4096)
+                is_explicit = "@EXPLICIT" in header
 
-            result = subprocess.run(
-                ["tar", "-xzf", tmp_path, "-C", install_path],
-                capture_output=True,
-                text=True,
-            )
-            if result.returncode != 0:
-                self.set_status(500)
-                self.finish(json.dumps({
-                    "message": f"Unpack failed: {result.stderr}"
-                }))
-                return
+                if is_explicit:
+                    conda_cmd = ["conda", "create", "--name", environment_name,
+                                 "--file", tmp_path, "--yes"]
+                    cmd_label = "conda create"
+                else:
+                    # conda env create infers format from the file extension;
+                    # rename to .yml so it is parsed as YAML, not as a spec list.
+                    yml_path = tmp_path[:-4] + ".yml"
+                    os.rename(tmp_path, yml_path)
+                    tmp_path = yml_path
+                    conda_cmd = ["conda", "env", "create", "--name", environment_name,
+                                 "--file", tmp_path, "--yes"]
+                    cmd_label = "conda env create"
 
-            # Run conda-unpack if available
-            unpack_bin = os.path.join(install_path, "bin", "conda-unpack")
-            if os.path.exists(unpack_bin):
-                subprocess.run([unpack_bin], capture_output=True)
+                result = subprocess.run(
+                    conda_cmd,
+                    capture_output=True,
+                    text=True,
+                )
+                if result.returncode != 0:
+                    self.set_status(500)
+                    self.finish(json.dumps({
+                        "message": f"{cmd_label} failed: {result.stderr}"
+                    }))
+                    return
+
+                conda_prefix = os.environ.get("CONDA_PREFIX", "")
+                if conda_prefix:
+                    envs_dir = os.path.join(
+                        os.path.dirname(os.path.dirname(conda_prefix)), "envs"
+                    )
+                else:
+                    envs_dir = os.path.expanduser("~/conda/envs")
+                install_path = os.path.join(envs_dir, environment_name)
+
+            else:
+                # Derive conda environments directory from CONDA_PREFIX or default
+                conda_prefix = os.environ.get("CONDA_PREFIX", "")
+                if conda_prefix:
+                    envs_dir = os.path.join(
+                        os.path.dirname(os.path.dirname(conda_prefix)), "envs"
+                    )
+                else:
+                    envs_dir = os.path.expanduser("~/conda/envs")
+
+                install_path = os.path.join(envs_dir, environment_name)
+                os.makedirs(install_path, exist_ok=True)
+
+                result = subprocess.run(
+                    ["tar", "-xzf", tmp_path, "-C", install_path],
+                    capture_output=True,
+                    text=True,
+                )
+                if result.returncode != 0:
+                    self.set_status(500)
+                    self.finish(json.dumps({
+                        "message": f"Unpack failed: {result.stderr}"
+                    }))
+                    return
+
+                # Run conda-unpack to fix hardcoded paths baked in by conda-pack
+                unpack_bin = os.path.join(install_path, "bin", "conda-unpack")
+                if os.path.exists(unpack_bin):
+                    unpack_result = subprocess.run(
+                        [unpack_bin],
+                        capture_output=True,
+                        text=True,
+                    )
+                    if unpack_result.returncode != 0:
+                        self.set_status(500)
+                        self.finish(json.dumps({
+                            "message": f"conda-unpack failed: {unpack_result.stderr}"
+                        }))
+                        return
 
         except Exception as e:
             self.set_status(500)

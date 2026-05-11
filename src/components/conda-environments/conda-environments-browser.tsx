@@ -95,6 +95,7 @@ export function CondaEnvironmentsBrowser() {
                   environment={selectedEnv}
                   onClose={() => setSelectedEnv(null)}
                   onUpdated={updated => setSelectedEnv(updated)}
+                  onInstalled={refreshList}
                 />
               </Stack>
             )}

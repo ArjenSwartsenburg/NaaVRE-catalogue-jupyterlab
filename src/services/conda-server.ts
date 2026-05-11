@@ -49,6 +49,8 @@ export interface ICondaPackResponse {
 export interface ICondaInstallRequest {
   download_url: string;
   environment_name: string;
+  /** "pack": unpack a conda-pack tar.gz (default); "explicit": conda create --file; "yaml": conda env create -f */
+  install_method?: 'pack' | 'explicit' | 'yaml';
 }
 
 export interface ICondaInstallResponse {

@@ -12,6 +12,7 @@ import Typography from '@mui/material/Typography';
 import CloudDownloadIcon from '@mui/icons-material/CloudDownload';
 import BuildIcon from '@mui/icons-material/Build';
 import PeopleIcon from '@mui/icons-material/People';
+import DownloadForOfflineIcon from '@mui/icons-material/DownloadForOffline';
 import { NaaVREExternalService } from '@naavre/communicator-jupyterlab';
 
 import { ICondaEnvironment } from '../../types/NaaVRECatalogue/conda-environments';
@@ -22,7 +23,11 @@ import { ShareDialog } from '../assets-browser/share-dialog';
 import { DeleteDialog } from '../assets-browser/delete-dialog';
 import { SettingsContext } from '../../settings';
 import { UserInfoContext } from '../../contexts/UserInfoContext';
-import { packCondaEnvironment, getLocalCondaEnvs } from '../../services/conda-server';
+import {
+  packCondaEnvironment,
+  installCondaEnvironment,
+  getLocalCondaEnvs
+} from '../../services/conda-server';
 import { Asset, assetKinds } from '../assets-browser/asset-kinds';
 import DeleteIcon from '@mui/icons-material/Delete';
 
@@ -98,11 +103,13 @@ const condaAssetKind = assetKinds.find(k => k.slug === 'conda-environments')!;
 export function CondaEnvironmentDetail({
   environment,
   onClose,
-  onUpdated
+  onUpdated,
+  onInstalled
 }: {
   environment: ICondaEnvironment;
   onClose: () => void;
   onUpdated: (env: ICondaEnvironment) => void;
+  onInstalled?: () => void;
 }) {
   const settings = useContext(SettingsContext);
   const userInfo = useContext(UserInfoContext);
@@ -113,6 +120,11 @@ export function CondaEnvironmentDetail({
   const [packLoading, setPackLoading] = useState(false);
   const [packError, setPackError] = useState<string | null>(null);
   const [packSuccess, setPackSuccess] = useState<string | null>(null);
+
+  const [installLoading, setInstallLoading] = useState(false);
+  const [installError, setInstallError] = useState<string | null>(null);
+  const [installSuccess, setInstallSuccess] = useState<string | null>(null);
+  const [installConflict, setInstallConflict] = useState(false);
 
   const effectiveUsername = userInfo.username ?? userInfo.preferred_username;
   const isOwner =
@@ -160,6 +172,58 @@ export function CondaEnvironmentDetail({
       setPackLoading(false);
     }
   }, [environment, settings.catalogueServiceUrl, onUpdated]);
+
+  const handleInstallLocally = useCallback(
+    async (force = false) => {
+      const envName = environment.environment_name || environment.title;
+      setInstallLoading(true);
+      setInstallError(null);
+      setInstallSuccess(null);
+      setInstallConflict(false);
+      try {
+        // Check for local name conflict
+        if (!force) {
+          const { envs } = await getLocalCondaEnvs();
+          if (envs.some(e => e.name === envName)) {
+            setInstallConflict(true);
+            setInstallLoading(false);
+            return;
+          }
+        }
+
+        // Pick install method: prefer packed artifact, fall back to dependency list
+        let downloadUrl: string;
+        let installMethod: 'pack' | 'explicit' | 'yaml';
+        if (environment.environment_file) {
+          downloadUrl = environment.environment_file;
+          installMethod = 'pack';
+        } else if (environment.dependency_list) {
+          downloadUrl = environment.dependency_list;
+          // YAML environment files need `conda env create -f`; explicit lists use `conda create --file`
+          const depPath = new URL(environment.dependency_list).pathname;
+          installMethod = /\.ya?ml$/i.test(depPath) ? 'yaml' : 'explicit';
+        } else {
+          throw 'No artifact or dependency list is available for this environment.';
+        }
+
+        await installCondaEnvironment({
+          download_url: downloadUrl,
+          environment_name: envName,
+          install_method: installMethod
+        });
+
+        setInstallSuccess(
+          `Environment "${envName}" installed successfully.`
+        );
+        onInstalled?.();
+      } catch (e) {
+        setInstallError(String(e));
+      } finally {
+        setInstallLoading(false);
+      }
+    },
+    [environment, onInstalled]
+  );
 
   const handleDownload = useCallback(() => {
     if (!environment.environment_file) {
@@ -220,6 +284,34 @@ export function CondaEnvironmentDetail({
                 {packSuccess}
               </Alert>
             )}
+            {installError && (
+              <Alert severity="error" sx={{ mt: 1 }}>
+                {installError}
+              </Alert>
+            )}
+            {installSuccess && (
+              <Alert severity="success" sx={{ mt: 1 }}>
+                {installSuccess}
+              </Alert>
+            )}
+            {installConflict && (
+              <Alert
+                severity="warning"
+                sx={{ mt: 1 }}
+                action={
+                  <Button
+                    color="inherit"
+                    size="small"
+                    onClick={() => handleInstallLocally(true)}
+                  >
+                    Install anyway
+                  </Button>
+                }
+              >
+                An environment with this name is already installed locally.
+                Installing will overwrite it.
+              </Alert>
+            )}
           </Stack>
 
           <Divider orientation="vertical" flexItem />
@@ -248,6 +340,20 @@ export function CondaEnvironmentDetail({
                 !environment.environment_file
                   ? 'No artifact available yet'
                   : undefined
+              }
+            />
+            <ActionButton
+              label="Install locally"
+              icon={<DownloadForOfflineIcon fontSize="small" />}
+              onClick={() => handleInstallLocally()}
+              loading={installLoading}
+              disabled={!environment.environment_file && !environment.dependency_list}
+              tooltip={
+                !environment.environment_file && !environment.dependency_list
+                  ? 'No artifact or dependency list available'
+                  : environment.environment_file
+                  ? 'Unpack conda-pack artifact to local envs directory (platform-specific)'
+                  : 'Recreate environment from explicit dependency list (platform-specific)'
               }
             />
             <ActionButton
