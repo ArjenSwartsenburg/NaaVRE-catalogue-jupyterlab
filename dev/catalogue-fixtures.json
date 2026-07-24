@@ -310,7 +310,6 @@
     "pk": "d1d41322-1101-489c-82a1-8038ea999416",
     "fields": {
       "version": 1,
-      "next_version": "b58c627a-1843-421c-a897-89461ddc581a",
       "container_image": "example.com/naavre-cells/test-cell-1:49c621b",
       "base_container_image": 2,
       "kernel": "ipython",
@@ -328,7 +327,6 @@
     "pk": "b58c627a-1843-421c-a897-89461ddc581a",
     "fields": {
       "version": 2,
-      "next_version": null,
       "container_image": "example.com/naavre-cells/test-cell-1:7abc41dd",
       "base_container_image": 2,
       "kernel": "ipython",
@@ -346,7 +344,6 @@
     "pk": "b6923c9e-eeb6-49fe-81f2-3df7003f8332",
     "fields": {
       "version": 1,
-      "next_version": null,
       "container_image": "example.com/naavre-cells/test-cell-2:f7b1772",
       "base_container_image": 2,
       "kernel": "",
@@ -364,7 +361,6 @@
     "pk": "3995b067-95fd-4706-9325-2b89339afb2c",
     "fields": {
       "version": 1,
-      "next_version": null,
       "container_image": "example.com/naavre-cells/other-vl-cell-1:b078cae4",
       "base_container_image": 2,
       "kernel": "ipython",
@@ -382,7 +378,6 @@
     "pk": "a9ad6181-e78c-45b0-83c1-69385b9f9404",
     "fields": {
       "version": 1,
-      "next_version": null,
       "container_image": "example.com/naavre-cells/shared:93807f0f",
       "base_container_image": 2,
       "kernel": "ipython",
@@ -400,7 +395,6 @@
     "pk": "d7fa87ca-79a3-43eb-993a-83afec93f1e4",
     "fields": {
       "version": 1,
-      "next_version": null,
       "container_image": "example.com/naavre-cells/shared:93807f0f",
       "base_container_image": 2,
       "kernel": "ipython",
@@ -418,7 +412,6 @@
     "pk": "77e49ffb-7688-40c5-8287-6693ae3d096a",
     "fields": {
       "version": 1,
-      "next_version": null,
       "container_image": "example.com/naavre-cells/shared:93807f0f",
       "base_container_image": 2,
       "kernel": "ipython",
@@ -436,7 +429,6 @@
     "pk": "cbd0bc89-7418-4536-a8c4-6eb3bb6bf2e6",
     "fields": {
       "version": 1,
-      "next_version": null,
       "container_image": "example.com/naavre-cells/shared:93807f0f",
       "base_container_image": 2,
       "kernel": "ipython",
@@ -447,6 +439,58 @@
       "confs": [],
       "params": [],
       "secrets": []
+    }
+  },
+  {
+    "model": "workflow_cells.cellversionscollection",
+    "pk": 1,
+    "fields": {
+      "versions": [
+        "d1d41322-1101-489c-82a1-8038ea999416",
+        "b58c627a-1843-421c-a897-89461ddc581a"
+      ]
+    }
+  },
+  {
+    "model": "workflow_cells.cellversionscollection",
+    "pk": 2,
+    "fields": {
+      "versions": ["b6923c9e-eeb6-49fe-81f2-3df7003f8332"]
+    }
+  },
+  {
+    "model": "workflow_cells.cellversionscollection",
+    "pk": 3,
+    "fields": {
+      "versions": ["3995b067-95fd-4706-9325-2b89339afb2c"]
+    }
+  },
+  {
+    "model": "workflow_cells.cellversionscollection",
+    "pk": 4,
+    "fields": {
+      "versions": ["a9ad6181-e78c-45b0-83c1-69385b9f9404"]
+    }
+  },
+  {
+    "model": "workflow_cells.cellversionscollection",
+    "pk": 5,
+    "fields": {
+      "versions": ["d7fa87ca-79a3-43eb-993a-83afec93f1e4"]
+    }
+  },
+  {
+    "model": "workflow_cells.cellversionscollection",
+    "pk": 6,
+    "fields": {
+      "versions": ["77e49ffb-7688-40c5-8287-6693ae3d096a"]
+    }
+  },
+  {
+    "model": "workflow_cells.cellversionscollection",
+    "pk": 7,
+    "fields": {
+      "versions": ["cbd0bc89-7418-4536-a8c4-6eb3bb6bf2e6"]
     }
   },
   {
@@ -474,8 +518,14 @@
     "model": "notebook_files.notebookfile",
     "pk": "ef9542e6-a36d-4c59-9d79-c4649168ff55",
     "fields": {
-      "version": 1,
-      "next_version": null
+      "version": 1
+    }
+  },
+  {
+    "model": "notebook_files.notebookfileversionscollection",
+    "pk": 1,
+    "fields": {
+      "versions": ["ef9542e6-a36d-4c59-9d79-c4649168ff55"]
     }
   }
 ]

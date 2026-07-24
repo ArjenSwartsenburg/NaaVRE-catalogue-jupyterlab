@@ -18,7 +18,7 @@ export const notebooks: (IFileAsset & IVersioningMixin)[] = [
     created: '2025-09-19T18:48:23.397000Z',
     modified: '2025-09-19T18:48:23.397000Z',
     version: 1,
-    next_version: null,
+    versions: [],
     file: ''
   },
   {
@@ -32,7 +32,7 @@ export const notebooks: (IFileAsset & IVersioningMixin)[] = [
     created: '2025-09-19T18:48:23.397000Z',
     modified: '2025-09-19T18:48:23.397000Z',
     version: 1,
-    next_version: null,
+    versions: [],
     file: ''
   },
   {
@@ -46,7 +46,7 @@ export const notebooks: (IFileAsset & IVersioningMixin)[] = [
     created: '2025-09-19T18:48:23.397000Z',
     modified: '2025-09-19T18:48:23.397000Z',
     version: 1,
-    next_version: null,
+    versions: [],
     file: ''
   },
   {
@@ -60,7 +60,7 @@ export const notebooks: (IFileAsset & IVersioningMixin)[] = [
     created: '2025-09-19T18:48:23.397000Z',
     modified: '2025-09-19T18:48:23.397000Z',
     version: 1,
-    next_version: null,
+    versions: [],
     file: ''
   },
   {
@@ -74,7 +74,7 @@ export const notebooks: (IFileAsset & IVersioningMixin)[] = [
     created: '2025-01-19T21:40:23.503000Z',
     modified: '2025-01-19T21:40:23.503000Z',
     version: 1,
-    next_version: null,
+    versions: [],
     file: ''
   },
   {
@@ -88,7 +88,7 @@ export const notebooks: (IFileAsset & IVersioningMixin)[] = [
     created: '2025-01-19T21:37:23.503000Z',
     modified: '2025-01-19T21:37:23.503000Z',
     version: 1,
-    next_version: null,
+    versions: [],
     file: ''
   },
   {
@@ -103,7 +103,7 @@ export const notebooks: (IFileAsset & IVersioningMixin)[] = [
     created: '2025-01-19T21:39:53.924000Z',
     modified: '2025-01-19T21:39:53.924000Z',
     version: 1,
-    next_version: null,
+    versions: [],
     file: ''
   },
   {
@@ -117,7 +117,7 @@ export const notebooks: (IFileAsset & IVersioningMixin)[] = [
     created: '2025-01-19T21:37:23.503000Z',
     modified: '2025-01-19T21:37:23.503000Z',
     version: 1,
-    next_version: null,
+    versions: [],
     file: ''
   },
   {
@@ -131,7 +131,7 @@ export const notebooks: (IFileAsset & IVersioningMixin)[] = [
     created: '2025-01-19T21:38:23.503000Z',
     modified: '2025-01-19T21:37:23.503000Z',
     version: 1,
-    next_version: null,
+    versions: [],
     file: ''
   }
 ];

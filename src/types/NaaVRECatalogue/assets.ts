@@ -11,9 +11,14 @@ export interface IUser {
   name: string;
 }
 
+export interface IAssetVersionsRef {
+  version: number;
+  url: string;
+}
+
 export interface IVersioningMixin {
   version?: number;
-  next_version?: string | null;
+  versions?: IAssetVersionsRef[];
 }
 
 export interface IBaseAsset {

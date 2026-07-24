@@ -2,7 +2,7 @@ name: naavre-catalogue-jl-dev
 
 services:
   catalogue-service:
-    image: ghcr.io/naavre/naavre-catalogue-service:v0.5.0-alpha.1
+    image: ghcr.io/naavre/naavre-catalogue-service:v0.6.0
     network_mode: host
     ports:
       - '127.0.0.1:8000:8000'

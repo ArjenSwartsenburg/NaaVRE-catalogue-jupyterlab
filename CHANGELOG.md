@@ -2,6 +2,29 @@
 
 <!-- <START NEW CHANGELOG ENTRY> -->
 
+## 0.2.0
+
+([Full Changelog](https://github.com/NaaVRE/NaaVRE-catalogue-jupyterlab/compare/v0.1.3...adef87729986453926a7b4b424f9a76f08f7ab1e))
+
+### Maintenance and upkeep improvements
+
+- Replace asset `.next_version` with `.versions` [#51](https://github.com/NaaVRE/NaaVRE-catalogue-jupyterlab/pull/51) ([@gpelouze](https://github.com/gpelouze))
+- Bump actions/create-github-app-token from 2 to 3 [#41](https://github.com/NaaVRE/NaaVRE-catalogue-jupyterlab/pull/41) ([@gpelouze](https://github.com/gpelouze))
+- Bump actions/upload-artifact from 6 to 7 [#33](https://github.com/NaaVRE/NaaVRE-catalogue-jupyterlab/pull/33) ([@gpelouze](https://github.com/gpelouze))
+- Bump actions/download-artifact from 7 to 8 [#32](https://github.com/NaaVRE/NaaVRE-catalogue-jupyterlab/pull/32) ([@gpelouze](https://github.com/gpelouze))
+- Bump actions/create-github-app-token from 1 to 2 [#23](https://github.com/NaaVRE/NaaVRE-catalogue-jupyterlab/pull/23) ([@gpelouze](https://github.com/gpelouze))
+
+### Contributors to this release
+
+The following people contributed discussions, new ideas, code and documentation contributions, and review.
+See [our definition of contributors](https://github-activity.readthedocs.io/en/latest/use/#how-does-this-tool-define-contributions-in-the-reports).
+
+([GitHub contributors page for this release](https://github.com/NaaVRE/NaaVRE-catalogue-jupyterlab/graphs/contributors?from=2026-01-16&to=2026-05-12&type=c))
+
+@gpelouze ([activity](https://github.com/search?q=repo%3ANaaVRE%2FNaaVRE-catalogue-jupyterlab+involves%3Agpelouze+updated%3A2026-01-16..2026-05-12&type=Issues))
+
+<!-- <END NEW CHANGELOG ENTRY> -->
+
 ## 0.1.3
 
 ([Full Changelog](https://github.com/NaaVRE/NaaVRE-catalogue-jupyterlab/compare/v0.1.2...e5da4f5956b4a2214cdfe64f73f0eb659b33ad2a))
@@ -23,8 +46,6 @@ See [our definition of contributors](https://github-activity.readthedocs.io/en/l
 ([GitHub contributors page for this release](https://github.com/NaaVRE/NaaVRE-catalogue-jupyterlab/graphs/contributors?from=2026-01-09&to=2026-01-16&type=c))
 
 @gpelouze ([activity](https://github.com/search?q=repo%3ANaaVRE%2FNaaVRE-catalogue-jupyterlab+involves%3Agpelouze+updated%3A2026-01-09..2026-01-16&type=Issues))
-
-<!-- <END NEW CHANGELOG ENTRY> -->
 
 ## 0.1.2
 
