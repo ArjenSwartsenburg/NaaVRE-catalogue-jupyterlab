@@ -24,7 +24,10 @@ classifiers = [
 ]
 dependencies = [
     "NaaVRE-communicator-jupyterlab>=0.3.2",
-    "jupyter_server>=2.0.1,<3"
+    "jupyter_server>=2.0.1,<3",
+    # The conda-environments server handler shells out to the conda-pack CLI
+    # to build environment artifacts.
+    "conda-pack>=0.8"
 ]
 dynamic = ["version", "description", "authors", "urls", "keywords"]
 
