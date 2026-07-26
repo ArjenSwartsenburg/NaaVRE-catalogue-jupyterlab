@@ -9,6 +9,23 @@ from jupyter_server.base.handlers import APIHandler
 from jupyter_server.utils import url_path_join
 
 
+def _conda_envs_dir() -> str:
+    """Directory where conda environments are installed.
+
+    When CONDA_PREFIX points at a named env (.../envs/<name>), reuse its
+    envs directory. When it points at the base env (e.g. /opt/conda, the
+    case in deployed Jupyter pods), use <base>/envs — naively walking two
+    dirnames up from the base prefix yields '/envs', which is not writable.
+    """
+    conda_prefix = os.environ.get("CONDA_PREFIX", "")
+    if not conda_prefix:
+        return os.path.expanduser("~/conda/envs")
+    parent = os.path.dirname(conda_prefix)
+    if os.path.basename(parent) == "envs":
+        return parent
+    return os.path.join(conda_prefix, "envs")
+
+
 class CondaPackHandler(APIHandler):
     """Pack a conda environment and upload it to a presigned S3 URL."""
 
@@ -156,26 +173,14 @@ class CondaInstallHandler(APIHandler):
                     }))
                     return
 
-                conda_prefix = os.environ.get("CONDA_PREFIX", "")
-                if conda_prefix:
-                    envs_dir = os.path.join(
-                        os.path.dirname(os.path.dirname(conda_prefix)), "envs"
-                    )
-                else:
-                    envs_dir = os.path.expanduser("~/conda/envs")
-                install_path = os.path.join(envs_dir, environment_name)
+                install_path = os.path.join(
+                    _conda_envs_dir(), environment_name
+                )
 
             else:
-                # Derive conda environments directory from CONDA_PREFIX or default
-                conda_prefix = os.environ.get("CONDA_PREFIX", "")
-                if conda_prefix:
-                    envs_dir = os.path.join(
-                        os.path.dirname(os.path.dirname(conda_prefix)), "envs"
-                    )
-                else:
-                    envs_dir = os.path.expanduser("~/conda/envs")
-
-                install_path = os.path.join(envs_dir, environment_name)
+                install_path = os.path.join(
+                    _conda_envs_dir(), environment_name
+                )
                 os.makedirs(install_path, exist_ok=True)
 
                 result = subprocess.run(
